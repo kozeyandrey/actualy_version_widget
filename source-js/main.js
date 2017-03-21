@@ -118,26 +118,20 @@ $(window).ready(function () {
             step: 1,
             animate: true,
             start: (e, ui) => {
-                console.log('start');
-                // console.log(e);
                 let v = 23 - ui.value;
                 popup.text(v);
-                let handler = $($(e.target).find('.ui-slider-handle'));
                 popup.show();
-                popup.css('top', handler.offset().top - 20);
-                popup.css('left', handler.offset().left + 30);
+                popup.css('top', ui.handle.getBoundingClientRect().top - 10);
+                popup.css('left', ui.handle.getBoundingClientRect().left + 30);
             },
             slide: function (e, ui) {
                 let v = 23 - ui.value;
                 popup.text(v);
-                let handler = $($(e.target).find('.ui-slider-handle'));
-
-                popup.css('top', handler.offset().top - 20);
-                popup.css('left', handler.offset().left + 30);
+                popup.css('top', ui.handle.getBoundingClientRect().top - 10);
+                popup.css('left', ui.handle.getBoundingClientRect().left + 30);
                 $(".contentSlider").html(v + ' hour');
             },
             stop: () => {
-                console.log('stop');
                 popup.hide();
             },
         });
