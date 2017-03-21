@@ -97,25 +97,20 @@
 
 .default-slider {
     display: none;
-    &.mon {
+    &.active-slider {
         display: block;
     }
-    &.tue {
-        display: block;
-    }
-    &.wed {
-        display: block;
-    }
-    &.thu {
-        display: block;
-    }
-    &.fr {
-        display: block;
-    }
-    &.sat {
-        display: block;
-    }
-    &.sun {
-        display: block;
-    }
+}
+
+#slider-popup {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    background-color: white;
+    border: 1px solid black;
+    display:none;
 }

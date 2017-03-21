@@ -4,6 +4,7 @@
   "description": "start template with gulp and sass",
   "main": "index.js",
   "dependencies": {
+    "babel-preset-es2015": "^6.24.0",
     "bootstrap-sass": "^3.3.7",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
