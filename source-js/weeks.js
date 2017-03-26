@@ -1,10 +1,11 @@
-export function initSlider(selector, daytime_on, sliderPopup, value) {
-    console.log(selector);
+var daytime_on = true;
+export function initSlider(selector, sliderPopup, values) {
+    console.log(selector, daytime_on);
     selector.slider({
         orientation: 'vertical',
         min: daytime_on ? 4 : 0,
         max: daytime_on ? 14 : 23,
-        value: value ? value : 23 - (moment().hour() + 1),
+        values: values ? values : [23 - (moment().hour() + 1)],
         step: 1,
         animate: true,
         start: (e, ui) => {
@@ -15,6 +16,16 @@ export function initSlider(selector, daytime_on, sliderPopup, value) {
             sliderPopup.css('left', ui.handle.getBoundingClientRect().left + 30);
         },
         slide: function (e, ui) {
+            let diffValues = [];
+            console.log(ui.values);
+            for (let a = 0; a < ui.values.length; a++) {
+                if (diffValues.indexOf(ui.values[a]) > -1) {
+                    return false;
+                } else {
+                    diffValues.push(ui.values[a]);
+                }
+            }
+
             let v = 23 - ui.value;
             sliderPopup.text(v);
             sliderPopup.css('top', ui.handle.getBoundingClientRect().top - 10);
@@ -34,7 +45,6 @@ export function getItems() {
 
 export function addLastWeekSlide(selector) {
     var ctx = selector.data('flexslider');
-    console.log(ctx);
 
     var template = $(`<li class="item">
                                 new
@@ -101,10 +111,9 @@ export function addLastWeekSlide(selector) {
                                 </div>
                             </li>`);
     ctx.addSlide(template);
-    console.log(ctx);
 }
 
-var daytime_on = true;
+
 export function daytimeSliderChanges() {
     if (daytime_on) {
         $('.switch-on').removeClass('active');

@@ -67,6 +67,7 @@
     border: none;
     background: none;
     a:focus {
+        background: red;
         outline: none;
     }
     .ui-slider-handle {

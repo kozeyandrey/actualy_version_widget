@@ -1,7 +1,6 @@
 import {initSlider, getItems, addLastWeekSlide,
         daytimeSliderChanges} from './weeks';
 $(window).ready(function () {
-    var daytime_on = true;
     $('body').append('<div id="slider-popup"></div>');
     var sliderPopup = $('#slider-popup');
 
@@ -27,7 +26,7 @@ $(window).ready(function () {
                     after: (ctx) => {
                         if (ctx.currentSlide == ctx.last) {
                             addLastWeekSlide($('.flexslider'));
-                            console.log('last transition ended?');
+                            console.log('last transition ended');
                         }
                     }
                 });
@@ -59,7 +58,7 @@ $(window).ready(function () {
                             activeElem = '.sunday';
                             break;
                     }
-                    initSlider($('.flex-active-slide').find(activeElem), daytime_on, sliderPopup);
+                    initSlider($('.flex-active-slide').find(activeElem), sliderPopup);
                     $('.flex-active-slide').find(activeElem).addClass('active-slider');
                 }
 
@@ -83,7 +82,7 @@ $(window).ready(function () {
     $('.switch-off').click(daytimeSliderChanges);
 
 
-// When clicking on the arrows generate weeks
+// When clicking on the arrows generate week text
     function setWeekText(week) {
         let m = week ? moment().week(week) : moment();
         let monday = m.isoWeekday(1).format('DD');
@@ -109,8 +108,6 @@ $(window).ready(function () {
         $('.flex-prev').show();
         $('.flex-prev-block').hide();
 
-        let slideIndex = getItems().index($('.flex-active-slide'));
-        console.log(slideIndex);
         if (week == thisWeek) {
             week = thisWeek + 1;
         } else if (week == prevWeek) {
@@ -146,14 +143,23 @@ $(window).ready(function () {
 
 
 // ADD AND DEL BUTTON
-    $('.default-wrap').click(function () {
-        $('.wednesday').addClass('twoHandles');
-        $(this).click(function () {
-            $('.wednesday').slider({
-                values: [13, 14, 15]
-            });
-        });
-    });
+
+    $('.add-button').click(() => {
+        var active = $('.flex-active-slide');
+        var monday = active.find('.monday');
+        if (!monday.hasClass('active-slider')) {
+            console.log('doesnt');
+            initSlider(monday, sliderPopup);
+            monday.addClass('active-slider');
+        } else {
+            var value = monday.slider('value');
+            var values = monday.slider('values');
+            console.log(value, values);
+            values.push(values[values.length-1] - 1);
+            monday.slider('destroy');
+            initSlider(monday, sliderPopup, values);
+        }
+    })
 
 
 });
