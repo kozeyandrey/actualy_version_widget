@@ -224,6 +224,8 @@ export function addHandle() {
         monday.slider('destroy');
         initSlider(monday, values);
     }
+    console.log(monday.find('.ui-slider-handle:last'));
+    monday.find('.ui-slider-handle:last').focus();
 }
 
 export function deleteHandle(handle) {
