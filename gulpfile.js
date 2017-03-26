@@ -4,16 +4,24 @@ var gulp = require('gulp'),
     scss = require('gulp-sass'),
     sourcemaps = require('gulp-sourcemaps'),
     uglify = require('gulp-uglify'),
+    browserify = require('browserify'),
     babel = require('gulp-babel'),
+    babelify = require('babelify'),
+    source = require('vinyl-source-stream'),
+    buffer = require('vinyl-buffer'),
     concat = require('gulp-concat'),
-    plumber = require('gulp-plumber');
+    plumber = require('gulp-plumber'),
+    errorHandle = function(err) {
+        console.log(err.toString());
+        this.emit('end');
+    };
 
 var SASS_INCLUDE_PATHS = [
     './node_modules/normalize-scss/sass/',
     './node_modules/bootstrap-sass/assets/stylesheets/'
 ];
 var LIB_JS_INCLUDE_PATHS = [
-    './node_modules/bootstrap-sass/assets/javascripts/bootstrap.js'
+    './node_modules/bootstrap-sass/assets/javascripts/bootstrap.js',
 ];
 
 function handleError(err) {
@@ -42,14 +50,20 @@ gulp.task('lib-js', function() {
         .pipe(gulp.dest('./js'));
 });
 gulp.task('js', function() {
-    return gulp.src('./source-js/**/*.js')
-        .pipe(plumber({ errorHandler: handleError }))
+    return browserify({
+        entries: ["./source-js/main.js"]
+    })
+        .transform(babelify.configure({
+            presets: ["es2015"]
+        }))
+        .bundle()
+        .on('error', errorHandle)
+        .pipe(source("main.js"))
+        .pipe(buffer())
         .pipe(sourcemaps.init())
-        .pipe(babel({compact: true, presets: ['es2015']}))
-        .pipe(concat('main.js'))
         .pipe(uglify())
         .pipe(sourcemaps.write())
-        .pipe(gulp.dest('./js'));
+        .pipe(gulp.dest("./js"));
 });
 
 gulp.task('watch', ['styles', 'js'], function () {
