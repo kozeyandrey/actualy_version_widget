@@ -140,7 +140,8 @@ $(window).ready(function () {
 // ADD AND DEL BUTTON
 
     $('.add-button').click(() => {
-        addHandle();
+        var activeMonday = $('.flex-active-slide').find('.monday');
+        addHandle(activeMonday);
     });
     {
         let focusElem = null;
@@ -160,8 +161,7 @@ $(window).ready(function () {
 
 });
 
-// TODO add button - add a new slider to monday
 // TODO drag and drop handles
-// TODO final calculations function
+// TODO final calculations function (dont forget about 23-value)
 // TODO handle custom size???
 

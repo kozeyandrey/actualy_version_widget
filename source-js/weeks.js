@@ -1,6 +1,17 @@
+// helpful functions
 Array.prototype.randomElement = function () {
     return this[Math.floor(Math.random() * this.length)]
 };
+function getAbsoluteRect(elem) {
+    var rect = elem.getBoundingClientRect();
+    return {
+        top: rect.top + window.scrollY,
+        bottom: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        right: rect.right + window.scrollX
+    }
+}
+
 var sliderPopup;
 $(window).ready(()=> {
     $('body').append('<div id="slider-popup"></div>');
@@ -9,7 +20,7 @@ $(window).ready(()=> {
 var daytime_on = true;
 function filterValues(values, daytime_on) {
     if (daytime_on) {
-        console.log('filtering...', values);
+        // console.log('filtering...', values);
         values = values.filter((v) => {
             if (v <= 14 && v >= 4) {
                 return true;
@@ -18,15 +29,17 @@ function filterValues(values, daytime_on) {
             }
         })
     }
-    console.log(values);
+    // console.log(values);
     return values;
 }
 function getDefaultValue(daytime_on) {
     var value = 23 - (moment().hour() + 1);
+    if (value < 0) value = 0;
     if (daytime_on) {
         if (value < 4) value = 4;
         else if (value > 14) value = 14;
     }
+    console.log('default', value);
     return value;
 }
 export function initSlider(selector, values) {
@@ -42,16 +55,16 @@ export function initSlider(selector, values) {
             let v = 23 - ui.value;
             sliderPopup.text(v);
             sliderPopup.show();
-            sliderPopup.css('top', ui.handle.getBoundingClientRect().top - 10);
-            sliderPopup.css('left', ui.handle.getBoundingClientRect().left + 30);
+            sliderPopup.css('top', getAbsoluteRect(ui.handle).top - 10);
+            sliderPopup.css('left', getAbsoluteRect(ui.handle).left + 30);
         },
         slide: function (e, ui) {
-            var thisCoords = this.getBoundingClientRect();
+            var thisCoords = getAbsoluteRect(this);
             // only triggering the event if mouse is in a range of the slider
-            if (!(e.pageX < thisCoords.right && e.pageX > thisCoords.left
-                && e.pageY < thisCoords.bottom && e.pageY > thisCoords.top)) {return false;}
+            if (!(e.pageX < thisCoords.right+10 && e.pageX > thisCoords.left-10
+                && e.pageY < thisCoords.bottom+10 && e.pageY > thisCoords.top-10)) {return false;}
             let diffValues = [];
-            console.log(ui.values);
+            // console.log(ui.values);
             // prevent handle overlapping
             for (let a = 0; a < ui.values.length; a++) {
                 if (diffValues.indexOf(ui.values[a]) > -1) {
@@ -63,66 +76,101 @@ export function initSlider(selector, values) {
 
             let v = 23 - ui.value;
             sliderPopup.text(v);
-            sliderPopup.css('top', ui.handle.getBoundingClientRect().top - 10);
-            sliderPopup.css('left', ui.handle.getBoundingClientRect().left + 30);
+            sliderPopup.css('top', getAbsoluteRect(ui.handle).top - 10);
+            sliderPopup.css('left', getAbsoluteRect(ui.handle).left + 30);
             $(".contentSlider").html(v + ' hour');
         },
         stop: () => {
             sliderPopup.hide();
         },
     });
-    console.log('VALUES', values);
+    // console.log('VALUES', values);
     if (values.length == 0) {
         selector.removeClass('active-slider');
     } else {
         selector.addClass('active-slider');
     }
-    setDraggable();
+    setDraggables();
 }
 
-function setDraggable() {
+function setDraggables() {
     $('.ui-slider-handle').off('mousedown');
-    $('.ui-slider-handle').on('dragstart', function(e) {
-        e.preventDefault();
-    });
     $('.ui-slider-handle').on('mousedown', function(e) {
-            console.log('mousedown', this);
-            var targetHandle = this;
-            var targetSlider = $(this).parent()[0];
-            console.log(targetSlider);
-            var clone = $(this).clone();
-            clone.css('position', 'absolute');
-            clone.css('width', '25px').css('height', '9px').css('left', '0').css('top', 0).css('opacity', 0.5);
-            $('body').append(clone);
-            function moveAt(e) {
-                var thisCoords = targetSlider.getBoundingClientRect();
-                if (e.pageX < thisCoords.right && e.pageX > thisCoords.left
-                    && e.pageY < thisCoords.bottom && e.pageY > thisCoords.top) {
-                    clone.css('display', 'none');
-                } else {
-                    clone.css('display', 'initial');
-                    clone.css('left', e.pageX - clone.width()/2);
-                    clone.css('top', e.pageY - clone.height()/2);
+        // console.log('mousedown', this);
+        var targetHandle = this;
+        $(targetHandle).focus(); // fix incorrect focus bug
+        console.log(targetHandle);
+        var targetSlider = $(this).parent()[0];
+        var handleIndex = $(targetSlider).find('.ui-slider-handle').index(targetHandle);
+        var sliderIndex = $('.flex-active-slide .scale-item .default-wrap > div').index($(targetSlider));
+        var clone = $(this).clone();
+        clone.css('position', 'absolute');
+        clone.css('width', '25px').css('height', '9px').css('left', '0').css('top', 0).css('opacity', 0.5);
+        clone.css('pointer-events', 'none');
+        $('body').append(clone);
+        console.log('sliderIndex', sliderIndex);
+        function initWrapEvents() {
+            $('.flex-active-slide .scale-item .default-wrap').each((i, el) => {
+                if (i !== sliderIndex) {
+                    // console.log('attaching event', el);
+                    $(el).mouseup(function(e) {
+                        applyDragAndDrop(e, targetHandle, targetSlider, handleIndex, sliderIndex);
+                    })
                 }
+            });
+        }
+        function clearWrapEvents() {
+            $('.flex-active-slide .scale-item .default-wrap').off('mouseup');
+        }
 
+        initWrapEvents();
+        clone.mouseup(() => {
+            console.log('clone mouseup', e)
+        });
 
+        function moveAt(e) {
+            $(targetHandle).focus(); // fix incorrect focus bug
+            var thisCoords = getAbsoluteRect(targetSlider);
+            if (e.pageX < thisCoords.right+10 && e.pageX > thisCoords.left-10
+                && e.pageY < thisCoords.bottom+10 && e.pageY > thisCoords.top-10) {
+                clone.css('display', 'none');
+            } else {
+                clone.css('display', 'initial');
+                clone.css('left', e.pageX - clone.width()/2);
+                clone.css('top', e.pageY - clone.height()/2);
             }
-            $('body').mousemove(function(e) {
-                console.log('mousemove');
-                moveAt(e);
-            });
 
-            $('body').mouseup(function() {
-                console.log('mouseup');
-                $('body').off('mouseup');
-                $('body').off('mousemove');
-                clone.remove();
 
-                // var values = $(targetHandle).parent().slider('values');
-                // console.log(values);
-                // initSlider($(targetHandle).parent(), values);
-            });
-        })
+        }
+        $('body').mousemove(function(e) {
+            // console.log('mousemove');
+            moveAt(e);
+        });
+
+        $('body').mouseup(function(e) {
+            // console.log('mouseup');
+            $('body').off('mousemove');
+            $('body').off('mouseup');
+            clone.remove();
+            clearWrapEvents();
+        });
+
+
+
+    })
+}
+
+function applyDragAndDrop(e, targetHandle, targetSlider, handleIndex, sliderIndex) {
+    console.log(e);
+    var oldSliderValues = $(targetSlider).slider('values');
+    var newSlider = $(e.currentTarget).find('div');
+    oldSliderValues.splice(handleIndex, 1);
+    $(targetSlider).slider('destroy');
+    initSlider($(targetSlider), oldSliderValues);
+    sliderPopup.hide();
+    console.log('newslider', newSlider);
+    addHandle(newSlider);
+
 }
 
 export function getItems() {
@@ -231,26 +279,21 @@ export function daytimeSliderChanges() {
         });
 
     }
-    console.log($('.flex-active-slide .active-slider').slider('values'));
 }
 
-export function addHandle() {
-    var active = $('.flex-active-slide');
-    var monday = active.find('.monday');
+export function addHandle(selector) {
+    var $slider = $(selector);
     var possibleArr = [];
     // a list of possible handle values which can be added
     if (daytime_on) possibleArr = [4,5,6,7,8,9,10,11,12,13,14];
     else {
         possibleArr = [...new Array(24).keys()];
     }
-
-    if (!monday.hasClass('active-slider')) {
-        initSlider(monday);
-        monday.addClass('active-slider');
+    if (!$slider.hasClass('active-slider')) {
+        initSlider($slider);
+        $slider.addClass('active-slider');
     } else {
-        var value = monday.slider('value');
-        var values = monday.slider('values');
-        console.log(value, values);
+        var values = $slider.slider('values');
         let possibleNewValue = values[values.length-1] - 1;
         if (values.indexOf(possibleNewValue) === -1 && possibleArr.indexOf(possibleNewValue) !== -1) {
             values.push(values[values.length-1] - 1);
@@ -267,13 +310,11 @@ export function addHandle() {
                 // console.log('no choices left! Nothing to add');
             }
 
-            console.log(values);
-
         }
-        monday.slider('destroy');
-        initSlider(monday, values);
+        $slider.slider('destroy');
+        initSlider($slider, values);
     }
-    monday.find('.ui-slider-handle:last').focus();
+    $slider.find('.ui-slider-handle:last').focus();
 }
 
 export function deleteHandle(handle) {
@@ -288,3 +329,4 @@ export function deleteHandle(handle) {
     $slider.slider('destroy');
     initSlider($slider, values);
 }
+

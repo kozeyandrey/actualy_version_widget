@@ -115,4 +115,9 @@
     border: 1px solid black;
     border-radius: 100%;
     display:none;
+    pointer-events: none;
+}
+
+.default-wrap {
+    user-select: initial !important;
 }
