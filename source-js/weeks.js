@@ -1,11 +1,41 @@
+Array.prototype.randomElement = function () {
+    return this[Math.floor(Math.random() * this.length)]
+};
+var sliderPopup;
+$(window).ready(()=> {
+    $('body').append('<div id="slider-popup"></div>');
+    sliderPopup = $('#slider-popup');
+});
 var daytime_on = true;
-export function initSlider(selector, sliderPopup, values) {
-    console.log(selector, daytime_on);
+function filterValues(values, daytime_on) {
+    if (daytime_on) {
+        console.log('filtering...', values);
+        values = values.filter((v) => {
+            if (v <= 14 && v >= 4) {
+                return true;
+            } else {
+                return false;
+            }
+        })
+    }
+    console.log(values);
+    return values;
+}
+function getDefaultValue(daytime_on) {
+    var value = 23 - (moment().hour() + 1);
+    if (daytime_on) {
+        if (value < 4) value = 4;
+        else if (value > 14) value = 14;
+    }
+    return value;
+}
+export function initSlider(selector, values) {
+    values = values ? filterValues(values, daytime_on) : [getDefaultValue(daytime_on)];
     selector.slider({
         orientation: 'vertical',
         min: daytime_on ? 4 : 0,
         max: daytime_on ? 14 : 23,
-        values: values ? values : [23 - (moment().hour() + 1)],
+        values: values,
         step: 1,
         animate: true,
         start: (e, ui) => {
@@ -36,6 +66,12 @@ export function initSlider(selector, sliderPopup, values) {
             sliderPopup.hide();
         },
     });
+    console.log('VALUES', values);
+    if (values.length == 0) {
+        selector.removeClass('active-slider');
+    } else {
+        selector.addClass('active-slider');
+    }
 }
 
 
@@ -137,11 +173,68 @@ export function daytimeSliderChanges() {
         $('.slider').addClass('default-slider');
         $('.default-slider').removeClass('slider');
 
-        $('.default-slider').slider({
-            min: 4,
-            max: 14
+        daytime_on = true;
+        $('.default-slider.active-slider').each((i, el) => {
+            let values = $(el).slider('values');
+            $(el).slider('destroy');
+            initSlider($(el), values);
+
         });
 
-        daytime_on = true;
     }
+    console.log($('.flex-active-slide .active-slider').slider('values'));
+}
+
+export function addHandle() {
+    var active = $('.flex-active-slide');
+    var monday = active.find('.monday');
+    var possibleArr = [];
+    // a list of possible handle values which can be added
+    if (daytime_on) possibleArr = [4,5,6,7,8,9,10,11,12,13,14];
+    else {
+        possibleArr = [...new Array(24).keys()];
+    }
+
+    if (!monday.hasClass('active-slider')) {
+        initSlider(monday);
+        monday.addClass('active-slider');
+    } else {
+        var value = monday.slider('value');
+        var values = monday.slider('values');
+        console.log(value, values);
+        let possibleNewValue = values[values.length-1] - 1;
+        if (values.indexOf(possibleNewValue) === -1 && possibleArr.indexOf(possibleNewValue) !== -1) {
+            values.push(values[values.length-1] - 1);
+        } else {
+            possibleArr = possibleArr.filter((num) => {
+                return values.indexOf(num) == -1;
+            });
+            // console.log('possible random values', possibleArr);
+            let newValue = possibleArr.randomElement();
+            // console.log('random new value', newValue);
+            if (newValue != undefined) {
+                values.push(newValue);
+            } else  {
+                // console.log('no choices left! Nothing to add');
+            }
+
+            console.log(values);
+
+        }
+        monday.slider('destroy');
+        initSlider(monday, values);
+    }
+}
+
+export function deleteHandle(handle) {
+    console.log(handle);
+    var $slider = handle.parent();
+    var handleIndex = $slider.find('.ui-slider-handle').index(handle);
+    var values = $slider.slider('values');
+    console.log('old values', values);
+    console.log(handleIndex);
+    values.splice(handleIndex, 1);
+    console.log('new values', values);
+    $slider.slider('destroy');
+    initSlider($slider, values);
 }

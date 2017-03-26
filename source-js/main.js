@@ -1,10 +1,6 @@
 import {initSlider, getItems, addLastWeekSlide,
-        daytimeSliderChanges} from './weeks';
+        daytimeSliderChanges, addHandle, deleteHandle} from './weeks';
 $(window).ready(function () {
-    $('body').append('<div id="slider-popup"></div>');
-    var sliderPopup = $('#slider-popup');
-
-
 
 
 //  OPEN WIDGET
@@ -58,8 +54,7 @@ $(window).ready(function () {
                             activeElem = '.sunday';
                             break;
                     }
-                    initSlider($('.flex-active-slide').find(activeElem), sliderPopup);
-                    $('.flex-active-slide').find(activeElem).addClass('active-slider');
+                    initSlider($('.flex-active-slide').find(activeElem));
                 }
 
 
@@ -145,26 +140,28 @@ $(window).ready(function () {
 // ADD AND DEL BUTTON
 
     $('.add-button').click(() => {
-        var active = $('.flex-active-slide');
-        var monday = active.find('.monday');
-        if (!monday.hasClass('active-slider')) {
-            console.log('doesnt');
-            initSlider(monday, sliderPopup);
-            monday.addClass('active-slider');
-        } else {
-            var value = monday.slider('value');
-            var values = monday.slider('values');
-            console.log(value, values);
-            values.push(values[values.length-1] - 1);
-            monday.slider('destroy');
-            initSlider(monday, sliderPopup, values);
-        }
-    })
+        addHandle();
+    });
+    {
+        let focusElem = null;
+        $('.del-button').mousedown(() => {
+            console.log('delete');
+            console.log($(':focus'));
+            $(':focus').hasClass('ui-slider-handle') ? focusElem = $(':focus') : focusElem = null;
+        });
+        $('.del-button').click(() => {
+            if (focusElem) {
+                deleteHandle(focusElem);
+            }
+        });
+    }
+
 
 
 });
 
-// TODO new week generating
-// TODO choosing a slider makes it a diff. color, delete button deletes it
 // TODO add button - add a new slider to monday
+// TODO drag and drop handles
+// TODO final calculations function
+// TODO handle custom size???
 
