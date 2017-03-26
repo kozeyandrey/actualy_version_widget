@@ -65,11 +65,11 @@
             user-select: none;
             &:hover {
                 .second-circle {
-                    border-color: $main_third_color;
+                    border-color: $main_third_color !important;
                     @include transition(all, .5s, ease);
                 }
                 .add {
-                    color: $main_third_color;
+                    color: $main_third_color !important;
                     @include transition(all, .5s, ease);
                 }
             }
@@ -82,7 +82,7 @@
                     display: block;
                     line-height: 36px;
                     text-align: center;
-                    font-size: 30px;
+                    font-size: 40px;
                     font-weight: 100;
                     color: $main_color;
                 }

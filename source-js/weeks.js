@@ -48,7 +48,7 @@ export function updateAllHandles() {
     $('.ui-slider-handle').css('height', heightToSet);
 }
 
-function updateSliderCSS() {
+export function updateSliderCSS() {
     if (daytime_on) {
         var plus;
         switch(HANDLE_SIZE) {
@@ -151,6 +151,8 @@ export function initSlider(selector, values) {
                 }
             }
 
+            if (!testBigSliderOverlap(ui)) return false;
+
             let v = 23 - ui.value;
             sliderPopup.text(v);
             sliderPopup.css('top', getAbsoluteRect(ui.handle).top - 10);
@@ -168,6 +170,40 @@ export function initSlider(selector, values) {
     }
     setDraggables();
     updateAllHandles();
+}
+
+function testBigSliderOverlap(ui) {
+    // console.log(ui.value, ui.values);
+    if (ui.values.length == 1) return true;
+    var diff;
+    switch(HANDLE_SIZE) {
+        case 100:
+            return true;
+            break;
+        case 200:
+            diff = 2;
+            break;
+        case 300:
+            diff = 3;
+            break;
+        case 400:
+            diff = 4;
+            break;
+    }
+    for (let i = 0; i < ui.values.length; i++) {
+        var thisValue = ui.values[i];
+        var otherValues = ui.values.slice();
+        otherValues.splice(i, 1);
+        // console.log(thisValue, otherValues);
+        for (let a = 0; a < otherValues.length; a++) {
+            let otherValue = otherValues[a];
+            if (Math.abs((23 - otherValue) - (23 - thisValue)) < diff) {
+                // console.log('return false on', 23 - thisValue, 23 - otherValue);
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 export function initFirstSlider(selector) {
@@ -221,6 +257,7 @@ function setDraggables() {
         var sliderIndex = $('.flex-active-slide .scale-item .default-wrap > div').index($(targetSlider));
         var clone = $(this).clone().addClass('handle-clone');
         clone.css('width', $(targetHandle).width()).css('height', $(targetHandle).height());
+        clone.css('border-radius', '10%');
         moveAt(e);
         $('body').append(clone);
         // console('sliderIndex', sliderIndex);
@@ -444,8 +481,17 @@ export function addHandle(selector, isFromDrag) {
         possibleArr = possibleArr.filter((num) => {
             return values.indexOf(num) == -1;
         });
-        // console.log('possible random values', possibleArr);
-        let newValue = possibleArr[possibleArr.length-1];
+
+        let newValue;
+        for (let i = 0; i < possibleArr.length; i++) {
+            let newV = possibleArr[i];
+            let newVs = values.slice();
+            newVs.push(newV);
+            let test = testBigSliderOverlap({'values': newVs});
+            if (test) {
+                newValue = newV;
+            }
+        }
         // console.log('random new value', newValue);
         if (newValue != undefined) {
             values.push(newValue);

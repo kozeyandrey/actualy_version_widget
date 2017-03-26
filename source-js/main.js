@@ -1,4 +1,4 @@
-import {initSlider, initFirstSlider, getItems, addLastWeekSlide,
+import {updateSliderCSS, initFirstSlider, getItems, addLastWeekSlide,
         daytimeSliderChanges, addHandle, deleteHandle,
         calculateAllHandles, setHandleSize, setWeekText} from './weeks';
 
@@ -81,7 +81,7 @@ $(window).ready(function () {
                         });
                         initFirstSlider(firstSlider);
 
-
+                        setHandleSize(100);
                     }
                 }
 
@@ -104,8 +104,14 @@ $(window).ready(function () {
 // DAYTIME ONLY OFF OR ON
 
 
-    $('.switch-on').click(daytimeSliderChanges);
-    $('.switch-off').click(daytimeSliderChanges);
+    $('.switch-on').click(() => {
+        daytimeSliderChanges();
+        updateSliderCSS();
+    });
+    $('.switch-off').click(() => {
+        daytimeSliderChanges();
+        updateSliderCSS();
+    });
 
     $('.flex-prev').hide();
     $('.flex-prev-block').show();
