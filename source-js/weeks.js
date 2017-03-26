@@ -72,6 +72,7 @@ export function initSlider(selector, values) {
     } else {
         selector.addClass('active-slider');
     }
+    // $('.ui-slider-handle').attr('draggable', true);
 }
 
 
@@ -83,7 +84,6 @@ export function addLastWeekSlide(selector) {
     var ctx = selector.data('flexslider');
 
     var template = $(`<li class="item">
-                                new
                                 <div class="item-week">
                                 </div>
                                 <div class="scale-wrapper">
@@ -224,7 +224,6 @@ export function addHandle() {
         monday.slider('destroy');
         initSlider(monday, values);
     }
-    console.log(monday.find('.ui-slider-handle:last'));
     monday.find('.ui-slider-handle:last').focus();
 }
 
