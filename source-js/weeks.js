@@ -46,8 +46,13 @@ export function initSlider(selector, values) {
             sliderPopup.css('left', ui.handle.getBoundingClientRect().left + 30);
         },
         slide: function (e, ui) {
+            var thisCoords = this.getBoundingClientRect();
+            // only triggering the event if mouse is in a range of the slider
+            if (!(e.pageX < thisCoords.right && e.pageX > thisCoords.left
+                && e.pageY < thisCoords.bottom && e.pageY > thisCoords.top)) {return false;}
             let diffValues = [];
             console.log(ui.values);
+            // prevent handle overlapping
             for (let a = 0; a < ui.values.length; a++) {
                 if (diffValues.indexOf(ui.values[a]) > -1) {
                     return false;
@@ -72,9 +77,53 @@ export function initSlider(selector, values) {
     } else {
         selector.addClass('active-slider');
     }
-    // $('.ui-slider-handle').attr('draggable', true);
+    setDraggable();
 }
 
+function setDraggable() {
+    $('.ui-slider-handle').off('mousedown');
+    $('.ui-slider-handle').on('dragstart', function(e) {
+        e.preventDefault();
+    });
+    $('.ui-slider-handle').on('mousedown', function(e) {
+            console.log('mousedown', this);
+            var targetHandle = this;
+            var targetSlider = $(this).parent()[0];
+            console.log(targetSlider);
+            var clone = $(this).clone();
+            clone.css('position', 'absolute');
+            clone.css('width', '25px').css('height', '9px').css('left', '0').css('top', 0).css('opacity', 0.5);
+            $('body').append(clone);
+            function moveAt(e) {
+                var thisCoords = targetSlider.getBoundingClientRect();
+                if (e.pageX < thisCoords.right && e.pageX > thisCoords.left
+                    && e.pageY < thisCoords.bottom && e.pageY > thisCoords.top) {
+                    clone.css('display', 'none');
+                } else {
+                    clone.css('display', 'initial');
+                    clone.css('left', e.pageX - clone.width()/2);
+                    clone.css('top', e.pageY - clone.height()/2);
+                }
+
+
+            }
+            $('body').mousemove(function(e) {
+                console.log('mousemove');
+                moveAt(e);
+            });
+
+            $('body').mouseup(function() {
+                console.log('mouseup');
+                $('body').off('mouseup');
+                $('body').off('mousemove');
+                clone.remove();
+
+                // var values = $(targetHandle).parent().slider('values');
+                // console.log(values);
+                // initSlider($(targetHandle).parent(), values);
+            });
+        })
+}
 
 export function getItems() {
     return $('.flexslider .slides .item:not(.clone)');
