@@ -466,5 +466,5 @@ export function calculateAllHandles() {
     });
 
     console.log(inConsole);
-    console.log(calculatedMoments);
+    console.log('object returned -> ', calculatedMoments);
 }
