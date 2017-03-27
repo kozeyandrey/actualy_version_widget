@@ -1,7 +1,17 @@
 import {initSlider, initFirstSlider, getItems, addLastWeekSlide,
-        daytimeSliderChanges, addHandle, deleteHandle} from './weeks';
+        daytimeSliderChanges, addHandle, deleteHandle,
+        updateAllHandles, setHandleSize} from './weeks';
+
 $(window).ready(function () {
-var isInitiated = false;
+    $('#handle-size-select').on('change', function(){
+        console.log('event');
+        console.log(this.value);
+        setHandleSize(this.value);
+    });
+
+
+    var isInitiated = false;
+
 //  OPEN WIDGET
     {
         let display;
@@ -175,7 +185,7 @@ var isInitiated = false;
         });
     }
 });
-// TODO prevent moving handles to days and hours past current time
+// TODO prevent moving handles to days and hours past current time DONE
 // TODO move white background a bit so it looks better (skype) DONE
 // TODO final calculations function (dont forget about 23-value)
 // TODO handle custom size???

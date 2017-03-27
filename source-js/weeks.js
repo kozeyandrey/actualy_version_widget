@@ -20,6 +20,28 @@ $(window).ready(()=> {
     currentHour = moment().hour();
 });
 var daytime_on = true;
+var HANDLE_SIZE = 100;
+export function setHandleSize(size) {
+    console.log(size);
+    HANDLE_SIZE = size;
+    updateAllHandles();
+}
+export function updateAllHandles() {
+    var heightToSet;
+    if (HANDLE_SIZE == 100) {
+        heightToSet = '8px';
+    } else if (HANDLE_SIZE == 200) {
+        heightToSet = '16px';
+    } else if (HANDLE_SIZE == 300) {
+        heightToSet = '24px';
+    } else if (HANDLE_SIZE == 400) {
+        heightToSet = '32px';
+    } else {
+        console.log('incorrect HANDLE_SIZE value!');
+        heightToSet = '8px';
+    }
+    $('.ui-slider-handle').css('height', heightToSet);
+}
 
 function filterValues(values, daytime_on) {
     if (daytime_on) {
@@ -96,6 +118,7 @@ export function initSlider(selector, values) {
         selector.addClass('active-slider');
     }
     setDraggables();
+    updateAllHandles();
 }
 
 export function initFirstSlider(selector) {
@@ -144,7 +167,7 @@ function setDraggables() {
         var handleIndex = $(targetSlider).find('.ui-slider-handle').index(targetHandle);
         var sliderIndex = $('.flex-active-slide .scale-item .default-wrap > div').index($(targetSlider));
         var clone = $(this).clone().addClass('handle-clone');
-        clone.css('width', '25px').css('height', '9px');
+        clone.css('width', $(targetHandle).width()).css('height', $(targetHandle).height());
         moveAt(e);
         $('body').append(clone);
         console.log('sliderIndex', sliderIndex);
