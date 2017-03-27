@@ -55,15 +55,18 @@ var isInitiated = false;
                                 break;
                         }
                         let firstSlider = $('.flex-active-slide').find(activeElem);
-                        initFirstSlider(firstSlider);
-
                         let allFirstWeekSliders = $('.flex-active-slide .default-wrap > div');
                         // console.log(allFirstWeekSliders);
                         let pastDaySliders = allFirstWeekSliders.splice(0, allFirstWeekSliders.index(firstSlider));
+                        console.log('pastDaySliders',pastDaySliders);
                         pastDaySliders.forEach(el => {
                             // mark past days (cant move/create handles there)
+                            console.log('adding past day');
                             $(el).addClass('past-day');
-                        })
+                        });
+                        initFirstSlider(firstSlider);
+
+
                     }
                 }
 

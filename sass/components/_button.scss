@@ -59,6 +59,10 @@
             padding: 7px;
             border-radius: 50%;
             box-shadow: 0 3px 6px $main_color;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
             &:hover {
                 .second-circle {
                     border-color: $main_third_color;
@@ -103,6 +107,10 @@
             padding: 7px;
             border-radius: 50%;
             box-shadow: 0 3px 6px $main_color;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
             &:hover {
                 .second-circle {
                     border-color: $main_third_color;

@@ -102,10 +102,7 @@ export function initFirstSlider(selector) {
     var defaultValue = getDefaultValue(daytime_on);
     if ((defaultValue >= 23 - currentHour)) {
         console.log('current day with an exception');
-        var thisWeekSliders = $('.flex-active-slide .default-wrap > div');
-        var sliderIndex = thisWeekSliders.index(selector);
-        var nextSlider = thisWeekSliders[sliderIndex + 1];
-        console.log($(nextSlider).hasClass('active-slider'));
+        var nextSlider = findNextSlider(selector, true);
         initSlider($(nextSlider));
     } else {
         initSlider(selector);
@@ -113,6 +110,24 @@ export function initFirstSlider(selector) {
     selector.addClass('current-day');
 }
 
+function findNextSlider(selector, gotonext) {
+    var thisWeekSliders = $('.flex-active-slide .default-wrap > div');
+    var sliderIndex = thisWeekSliders.index(selector);
+    // if not sunday
+    var nextSlider;
+    if (sliderIndex != 6) {
+        nextSlider = thisWeekSliders[sliderIndex + 1];
+    }
+    // if sunday
+    else {
+        var activeSlide = $('.flex-active-slide')[0];
+        var nextSlide = activeSlide.nextElementSibling;
+        nextSlider = $(nextSlide).find('.monday');
+        if (gotonext) goToNextSlide();
+    }
+    return nextSlider;
+
+}
 
 
 function handleCurrentDay(ui) {
@@ -283,6 +298,9 @@ export function addLastWeekSlide(selector) {
     ctx.addSlide(template);
 }
 
+function goToNextSlide() {
+    $('.flex-next').trigger('click');
+}
 
 export function daytimeSliderChanges() {
     if (daytime_on) {
@@ -330,9 +348,12 @@ export function addHandle(selector) {
     if (!$slider.hasClass('active-slider')) {
         var defaultValue = getDefaultValue(daytime_on);
         if ($slider.hasClass('current-day') && (defaultValue >= 23 - currentHour)) {
-            var thisWeekSliders = $('.flex-active-slide .default-wrap > div');
-            var sliderIndex = thisWeekSliders.index(selector);
-            var nextSlider = thisWeekSliders[sliderIndex + 1];
+            var nextSlider = findNextSlider(selector, false);
+            // if next slider is on another flexSlide
+            if ($('.flex-active-slide .default-wrap > div').index(nextSlider) == -1) {
+                // console.log('fix!');
+                return;
+            }
             addHandle(nextSlider);
             $(nextSlider).addClass('active-slider');
         }
