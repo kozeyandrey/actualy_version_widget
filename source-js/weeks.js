@@ -455,12 +455,18 @@ export function calculateAllHandles() {
                 hours.forEach(hour => {
                     calculatedMoments.push(
                         moment().year(startMoment.year()).month(startMoment.month())
-                            .week(week).day(day).hour(hour).minute(0).second(0).millisecond(0)
+                            .week(week).day(day).hour(hour).minute(0).second(0)
                     )
                 })
             }
         })
     });
+    // additional validating, incase handles went to past days/hours
+    calculatedMoments = calculatedMoments.filter(mom => {
+        let cantGoPast = startMoment.clone().hour(startHour+1).minute(0).second(0);
+        return (mom.unix() >= cantGoPast.unix());
+    });
+
     var inConsole = calculatedMoments.map(mom => {
         return mom.format('LLL');
     });
