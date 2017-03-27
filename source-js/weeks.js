@@ -13,11 +13,14 @@ function getAbsoluteRect(elem) {
 }
 
 var sliderPopup;
-var currentHour; // hour on which widget started, handles cant step on it and past it
+var startHour; // hour on which widget started, handles cant step on it and past it
+var startMoment;
 $(window).ready(()=> {
     $('body').append('<div id="slider-popup"></div>');
     sliderPopup = $('#slider-popup');
-    currentHour = moment().hour();
+    startHour = moment().hour();
+    startMoment = moment();
+    console.log(startMoment);
 });
 var daytime_on = true;
 var HANDLE_SIZE = 100;
@@ -123,7 +126,7 @@ export function initSlider(selector, values) {
 
 export function initFirstSlider(selector) {
     var defaultValue = getDefaultValue(daytime_on);
-    if ((defaultValue >= 23 - currentHour)) {
+    if ((defaultValue >= 23 - startHour)) {
         console.log('current day with an exception');
         var nextSlider = findNextSlider(selector, true);
         initSlider($(nextSlider));
@@ -154,7 +157,7 @@ function findNextSlider(selector, gotonext) {
 
 
 function handleCurrentDay(ui) {
-    return (ui.value < 23 - currentHour);
+    return (ui.value < 23 - startHour);
 }
 function setDraggables() {
     $('.ui-slider-handle').off('mousedown');
@@ -230,7 +233,7 @@ function applyDragAndDrop(e, targetSlider, newSlider, handleIndex) {
     if (newSlider.hasClass('past-day')) return;
     if (newSlider.hasClass('current-day')) {
         var defaultValue = getDefaultValue(daytime_on);
-        if (defaultValue >= 23 - currentHour) {
+        if (defaultValue >= 23 - startHour) {
             return;
         }
     }
@@ -370,7 +373,7 @@ export function addHandle(selector) {
     }
     if (!$slider.hasClass('active-slider')) {
         var defaultValue = getDefaultValue(daytime_on);
-        if ($slider.hasClass('current-day') && (defaultValue >= 23 - currentHour)) {
+        if ($slider.hasClass('current-day') && (defaultValue >= 23 - startHour)) {
             var nextSlider = findNextSlider(selector, false);
             // if next slider is on another flexSlide
             if ($('.flex-active-slide .default-wrap > div').index(nextSlider) == -1) {
@@ -392,7 +395,7 @@ export function addHandle(selector) {
         } else {
             if ($slider.hasClass('current-day')) {
                 possibleArr = possibleArr.filter((num) => {
-                    if (num >= 23 - currentHour) return false;
+                    if (num >= 23 - startHour) return false;
                     else return true;
                 })
             }
@@ -430,3 +433,32 @@ export function deleteHandle(handle) {
     initSlider($slider, values);
 }
 
+
+
+export function calculateAllHandles() {
+    var calculatedMoments = []; // final array
+
+    var allFlexSlides = $('.flexslider .slides .item:not(.clone)');
+    allFlexSlides.each((i, slide) => {
+        let week = startMoment.week() + i;
+        var allWeekSliders = $(slide).find('.default-wrap > div');
+        allWeekSliders.each((i, slider) => {
+            let day = 1 + i;
+            if ($(slider).hasClass('active-slider')) {
+                let values = $(slider).slider('values');
+                let hours = values.map(el => 23 - el);
+                hours.forEach(hour => {
+                    calculatedMoments.push(
+                        moment().year(startMoment.year()).month(startMoment.month())
+                            .week(week).day(day).hour(hour).minute(0).second(0).millisecond(0)
+                    )
+                })
+            }
+        })
+    });
+    var inConsole = calculatedMoments.map(mom => {
+        return mom.format('LLL');
+    });
+
+    console.log(inConsole);
+}

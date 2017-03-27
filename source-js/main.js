@@ -1,12 +1,13 @@
 import {initSlider, initFirstSlider, getItems, addLastWeekSlide,
         daytimeSliderChanges, addHandle, deleteHandle,
-        updateAllHandles, setHandleSize} from './weeks';
+        calculateAllHandles, setHandleSize} from './weeks';
 
 $(window).ready(function () {
     $('#handle-size-select').on('change', function(){
-        console.log('event');
-        console.log(this.value);
         setHandleSize(this.value);
+    });
+    $('#calculate-all').on('click', ()=> {
+        calculateAllHandles();
     });
 
 
@@ -66,12 +67,9 @@ $(window).ready(function () {
                         }
                         let firstSlider = $('.flex-active-slide').find(activeElem);
                         let allFirstWeekSliders = $('.flex-active-slide .default-wrap > div');
-                        // console.log(allFirstWeekSliders);
                         let pastDaySliders = allFirstWeekSliders.splice(0, allFirstWeekSliders.index(firstSlider));
-                        console.log('pastDaySliders',pastDaySliders);
                         pastDaySliders.forEach(el => {
                             // mark past days (cant move/create handles there)
-                            console.log('adding past day');
                             $(el).addClass('past-day');
                         });
                         initFirstSlider(firstSlider);
@@ -187,6 +185,7 @@ $(window).ready(function () {
 });
 // TODO prevent moving handles to days and hours past current time DONE
 // TODO move white background a bit so it looks better (skype) DONE
-// TODO final calculations function (dont forget about 23-value)
-// TODO handle custom size???
+// TODO final calculations function (dont forget about 23-value) bug
+// week text displays incorrectly if slides are skipped too fast
+// TODO handle custom size??? DONE
 
