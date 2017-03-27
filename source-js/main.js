@@ -1,6 +1,6 @@
 import {initSlider, initFirstSlider, getItems, addLastWeekSlide,
         daytimeSliderChanges, addHandle, deleteHandle,
-        calculateAllHandles, setHandleSize} from './weeks';
+        calculateAllHandles, setHandleSize, setWeekText} from './weeks';
 
 $(window).ready(function () {
     $('#handle-size-select').on('change', function(){
@@ -34,7 +34,14 @@ $(window).ready(function () {
                         after: (ctx) => {
                             if (ctx.currentSlide == ctx.last) {
                                 addLastWeekSlide($('.flexslider'));
-                                console.log('last transition ended');
+                            }
+                            setWeekText(ctx.currentSlide);
+                            if (ctx.currentSlide == 0) {
+                                $('.flex-prev').hide();
+                                $('.flex-prev-block').show();
+                            } else {
+                                $('.flex-prev').show();
+                                $('.flex-prev-block').hide();
                             }
                         }
                     });
@@ -100,80 +107,24 @@ $(window).ready(function () {
     $('.switch-on').click(daytimeSliderChanges);
     $('.switch-off').click(daytimeSliderChanges);
 
-
-// When clicking on the arrows generate week text
-    function setWeekText(week) {
-        let m = week ? moment().week(week) : moment();
-        let monday = m.isoWeekday(1).format('DD');
-        let sunday = m.isoWeekday(7).format('DD');
-        let thisMonth = m.format('MM');
-        $('.item-week').html('Week ' + monday + '-' + sunday + '.' + thisMonth);
-    }
+    $('.flex-prev').hide();
+    $('.flex-prev-block').show();
 
 
 
-    var thisWeek = moment().week();
-    var week = moment().week();
-    setWeekText(week);
-    if (week == thisWeek) {
-        $('.flex-prev').hide();
-        $('.flex-prev-block').show();
-    } else {
-        $('.flex-prev-block').hide();
-        $('.flex-prev').show();
-    }
-
-    $('.flex-next').click(function () {
-        $('.flex-prev').show();
-        $('.flex-prev-block').hide();
-
-        if (week == thisWeek) {
-            week = thisWeek + 1;
-        } else if (week == prevWeek) {
-            week = prevWeek + 1;
-        }
-        else {
-            week = week + 1;
-        }
-        setWeekText(week);
-    });
-
-    var theWeek = week;
-    var prevWeek;
-    $('.flex-prev').click(function () {
-        if (week == thisWeek) {
-            return false;
-        } else {
-            week = week - 1;
-        }
-        theWeek = week;
-        if (theWeek == thisWeek) {
-            $('.flex-prev').hide();
-            $('.flex-prev-block').show();
-        } else {
-            $('.flex-prev').show();
-            $('.flex-prev-block').hide();
-        }
-
-        setWeekText(week);
-
-        prevWeek = week;
-    });
+    
 
 
 // ADD AND DEL BUTTON
 
     $('.add-button').click(() => {
         var allSliders = $('.flex-active-slide .default-wrap > div:not(.past-day)');
-        console.log('allSliders', allSliders);
         var firstActiveSlider = allSliders[0];
         addHandle(firstActiveSlider);
     });
     {
         let focusElem = null;
         $('.del-button').mousedown(() => {
-            console.log('delete');
-            console.log($(':focus'));
             $(':focus').hasClass('ui-slider-handle') ? focusElem = $(':focus') : focusElem = null;
         });
         $('.del-button').click(() => {

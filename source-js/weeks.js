@@ -20,7 +20,7 @@ $(window).ready(()=> {
     sliderPopup = $('#slider-popup');
     startHour = moment().hour();
     startMoment = moment();
-    console.log(startMoment);
+    setWeekText();
 });
 var daytime_on = true;
 var HANDLE_SIZE = 100;
@@ -114,7 +114,7 @@ export function initSlider(selector, values) {
             sliderPopup.hide();
         },
     });
-    console.log('VALUES', values);
+    // console('VALUES', values);
     if (values.length == 0) {
         selector.removeClass('active-slider');
     } else {
@@ -127,7 +127,7 @@ export function initSlider(selector, values) {
 export function initFirstSlider(selector) {
     var defaultValue = getDefaultValue(daytime_on);
     if ((defaultValue >= 23 - startHour)) {
-        console.log('current day with an exception');
+        // console('current day with an exception');
         var nextSlider = findNextSlider(selector, true);
         initSlider($(nextSlider));
     } else {
@@ -165,7 +165,7 @@ function setDraggables() {
         // console.log('mousedown', this);
         var targetHandle = this;
         $(targetHandle).focus(); // fix incorrect focus bug
-        console.log(targetHandle);
+        // console(targetHandle);
         var targetSlider = $(this).parent()[0];
         var handleIndex = $(targetSlider).find('.ui-slider-handle').index(targetHandle);
         var sliderIndex = $('.flex-active-slide .scale-item .default-wrap > div').index($(targetSlider));
@@ -173,7 +173,7 @@ function setDraggables() {
         clone.css('width', $(targetHandle).width()).css('height', $(targetHandle).height());
         moveAt(e);
         $('body').append(clone);
-        console.log('sliderIndex', sliderIndex);
+        // console('sliderIndex', sliderIndex);
         function initWrapEvents() {
             $('.flex-active-slide .scale-item .default-wrap').each((i, el) => {
                 if (i !== sliderIndex) {
@@ -193,9 +193,6 @@ function setDraggables() {
         }
 
         initWrapEvents();
-        clone.mouseup(() => {
-            console.log('clone mouseup', e)
-        });
 
         function moveAt(e) {
             $(targetHandle).focus(); // fix incorrect focus bug
@@ -237,7 +234,7 @@ function applyDragAndDrop(e, targetSlider, newSlider, handleIndex) {
             return;
         }
     }
-    console.log(e);
+    // console.log(e);
     var oldSliderValues = $(targetSlider).slider('values');
     oldSliderValues.splice(handleIndex, 1);
     var wasAdded = addHandle(newSlider);
@@ -364,7 +361,7 @@ export function daytimeSliderChanges() {
 
 export function addHandle(selector) {
     var $slider = $(selector);
-    console.log($slider);
+    // console.log($slider);
     var possibleArr = [];
     // a list of possible handle values which can be added
     if (daytime_on) possibleArr = [4,5,6,7,8,9,10,11,12,13,14];
@@ -421,23 +418,31 @@ export function addHandle(selector) {
 }
 
 export function deleteHandle(handle) {
-    console.log(handle);
+    // console.log(handle);
     var $slider = handle.parent();
     var handleIndex = $slider.find('.ui-slider-handle').index(handle);
     var values = $slider.slider('values');
-    console.log('old values', values);
-    console.log(handleIndex);
+    // consol('old values', values);
+    // consol(handleIndex);
     values.splice(handleIndex, 1);
-    console.log('new values', values);
+    // consol('new values', values);
     $slider.slider('destroy');
     initSlider($slider, values);
 }
 
+export function setWeekText(slideIndex) {
+    let startM = startMoment.clone();
+    let m = slideIndex ? startM.add(slideIndex, 'w') : startM;
+    let monday = m.isoWeekday(1).format('DD');
+    let sunday = m.isoWeekday(7).format('DD');
+    let thisMonth = m.format('MM');
+    $('.item-week').html('Week ' + monday + '-' + sunday + '.' + thisMonth);
+}
 
 
 export function calculateAllHandles() {
     var calculatedMoments = []; // final array
-
+    console.log('calculating moments...');
     var allFlexSlides = $('.flexslider .slides .item:not(.clone)');
     allFlexSlides.each((i, slide) => {
         let week = startMoment.week() + i;
@@ -461,4 +466,5 @@ export function calculateAllHandles() {
     });
 
     console.log(inConsole);
+    console.log(calculatedMoments);
 }
