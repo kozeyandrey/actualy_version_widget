@@ -21,7 +21,7 @@ $(window).ready(()=> {
 var daytime_on = true;
 var HANDLE_SIZE = 100;
 export function setHandleSize(size) {
-    console.log(size);
+    // console.log(size);
     HANDLE_SIZE = parseInt(size);
     updateAllHandles();
     updateSliderCSS();

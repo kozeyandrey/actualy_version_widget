@@ -134,9 +134,4 @@ $(window).ready(function () {
         });
     }
 });
-//TODO fix white slider size DONE
-//TODO make handles appear in order, or on next slider if nowhere to add DONE
-//TODO 300 and 400 sizes go outside of border
-//TODO ???
-//TODO plus on add button centered DONE
 
