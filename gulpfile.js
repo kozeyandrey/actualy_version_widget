@@ -21,7 +21,7 @@ var SASS_INCLUDE_PATHS = [
     './node_modules/bootstrap-sass/assets/stylesheets/'
 ];
 var LIB_JS_INCLUDE_PATHS = [
-    './node_modules/bootstrap-sass/assets/javascripts/bootstrap.js',
+    './libs/jquery.flexslider-min.js'
 ];
 
 function handleError(err) {

@@ -8,6 +8,7 @@
     "babelify": "^7.3.0",
     "bootstrap-sass": "^3.3.7",
     "browserify": "^14.1.0",
+    "flexslider": "^2.6.3",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-concat": "^2.6.1",
