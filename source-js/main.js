@@ -138,5 +138,5 @@ $(window).ready(function () {
 //TODO make handles appear in order, or on next slider if nowhere to add DONE
 //TODO 300 and 400 sizes go outside of border
 //TODO ???
-//TODO plus on add button centered
+//TODO plus on add button centered DONE
 

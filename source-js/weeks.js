@@ -22,26 +22,71 @@ var daytime_on = true;
 var HANDLE_SIZE = 100;
 export function setHandleSize(size) {
     console.log(size);
-    HANDLE_SIZE = size;
+    HANDLE_SIZE = parseInt(size);
     updateAllHandles();
+    updateSliderCSS();
 }
 export function updateAllHandles() {
     var heightToSet;
-    if (HANDLE_SIZE == 100) {
-        heightToSet = '8px';
-    } else if (HANDLE_SIZE == 200) {
-        heightToSet = '16px';
-    } else if (HANDLE_SIZE == 300) {
-        heightToSet = '24px';
-    } else if (HANDLE_SIZE == 400) {
-        heightToSet = '32px';
-    } else {
-        console.log('incorrect HANDLE_SIZE value!');
-        heightToSet = '8px';
+    switch(HANDLE_SIZE) {
+        case 100:
+            heightToSet = 8;
+            break;
+        case 200:
+            heightToSet = 16;
+            break;
+        case 300:
+            heightToSet = 24;
+            break;
+        case 400:
+            heightToSet = 32;
+            break;
+        default:
+            console.log('incorrect HANDLE_SIZE! Defaulting to 100');
+            heightToSet = 8;
     }
     $('.ui-slider-handle').css('height', heightToSet);
 }
 
+function updateSliderCSS() {
+    if (daytime_on) {
+        var plus;
+        switch(HANDLE_SIZE) {
+            case 100:
+                plus = 0;
+                break;
+            case 200:
+                plus = 7;
+                break;
+            case 300:
+                plus = 14;
+                break;
+            case 400:
+                plus = 20;
+                break;
+        }
+        $('.default-wrap').css('height', 190 + plus);
+        $('.default-wrap').css('padding-top', 70 + plus);
+    } else {
+        var plus;
+        switch(HANDLE_SIZE) {
+            case 100:
+                plus = 0;
+                break;
+            case 200:
+                plus = 7;
+                break;
+            case 300:
+                plus = 14;
+                break;
+            case 400:
+                plus = 20;
+                break;
+        }
+        $('.default-wrap').css('height', 190 + plus);
+        $('.default-wrap').css('padding-top', plus);
+    }
+}
 function filterValues(values, daytime_on) {
     if (daytime_on) {
         // console.log('filtering...', values);
@@ -324,6 +369,7 @@ export function addLastWeekSlide(selector) {
                                 </div>
                             </li>`);
     ctx.addSlide(template);
+    updateSliderCSS();
 }
 
 export function daytimeSliderChanges() {
@@ -358,6 +404,7 @@ export function daytimeSliderChanges() {
         });
 
     }
+    updateSliderCSS();
 }
 
 export function addHandle(selector, isFromDrag) {
