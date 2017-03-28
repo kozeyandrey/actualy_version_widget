@@ -134,9 +134,9 @@ $(window).ready(function () {
         });
     }
 });
-// TODO prevent moving handles to days and hours past current time DONE
-// TODO move white background a bit so it looks better (skype) DONE
-// TODO final calculations function (dont forget about 23-value) bug
-// week text displays incorrectly if slides are skipped too fast
-// TODO handle custom size??? DONE
+//TODO fix white slider size DONE
+//TODO make handles appear in order, or on next slider if nowhere to add DONE
+//TODO 300 and 400 sizes go outside of border
+//TODO ???
+//TODO plus on add button centered
 

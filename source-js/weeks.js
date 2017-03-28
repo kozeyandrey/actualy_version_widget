@@ -1,7 +1,3 @@
-// helpful functions
-Array.prototype.randomElement = function () {
-    return this[Math.floor(Math.random() * this.length)]
-};
 function getAbsoluteRect(elem) {
     var rect = elem.getBoundingClientRect();
     return {
@@ -71,7 +67,12 @@ function getDefaultValue(daytime_on) {
     return value;
 }
 export function initSlider(selector, values) {
-    var defaultValue = getDefaultValue(daytime_on);
+    var defaultValue;
+    if (selector.hasClass('current-day')) {
+        defaultValue = getDefaultValue(daytime_on);
+    } else {
+        defaultValue = daytime_on ? 14 : 23;
+    }
     values = values ? filterValues(values, daytime_on) : [defaultValue];
     selector.slider({
         orientation: 'vertical',
@@ -125,6 +126,7 @@ export function initSlider(selector, values) {
 }
 
 export function initFirstSlider(selector) {
+    selector.addClass('current-day');
     var defaultValue = getDefaultValue(daytime_on);
     if ((defaultValue >= 23 - startHour)) {
         // console('current day with an exception');
@@ -133,7 +135,6 @@ export function initFirstSlider(selector) {
     } else {
         initSlider(selector);
     }
-    selector.addClass('current-day');
 }
 
 function findNextSlider(selector, gotonext) {
@@ -155,10 +156,14 @@ function findNextSlider(selector, gotonext) {
 
 }
 
+function goToNextSlide() {
+    $('.flex-next').trigger('click');
+}
 
 function handleCurrentDay(ui) {
     return (ui.value < 23 - startHour);
 }
+
 function setDraggables() {
     $('.ui-slider-handle').off('mousedown');
     $('.ui-slider-handle').on('mousedown', function(e) {
@@ -237,7 +242,7 @@ function applyDragAndDrop(e, targetSlider, newSlider, handleIndex) {
     // console.log(e);
     var oldSliderValues = $(targetSlider).slider('values');
     oldSliderValues.splice(handleIndex, 1);
-    var wasAdded = addHandle(newSlider);
+    var wasAdded = addHandle(newSlider, true);
     // if slider actually didnt update (not enough place), do nothing
     if (wasAdded) {
         $(targetSlider).slider('destroy');
@@ -321,10 +326,6 @@ export function addLastWeekSlide(selector) {
     ctx.addSlide(template);
 }
 
-function goToNextSlide() {
-    $('.flex-next').trigger('click');
-}
-
 export function daytimeSliderChanges() {
     if (daytime_on) {
         $('.switch-on').removeClass('active');
@@ -359,7 +360,7 @@ export function daytimeSliderChanges() {
     }
 }
 
-export function addHandle(selector) {
+export function addHandle(selector, isFromDrag) {
     var $slider = $(selector);
     // console.log($slider);
     var possibleArr = [];
@@ -384,37 +385,40 @@ export function addHandle(selector) {
             initSlider($slider);
             $slider.addClass('active-slider');
         }
+        return true;
     } else {
         var values = $slider.slider('values');
-        let possibleNewValue = values[values.length-1] - 4;
-        if (values.indexOf(possibleNewValue) === -1 && possibleArr.indexOf(possibleNewValue) !== -1) {
-            values.push(possibleNewValue);
-        } else {
-            if ($slider.hasClass('current-day')) {
-                possibleArr = possibleArr.filter((num) => {
-                    if (num >= 23 - startHour) return false;
-                    else return true;
-                })
-            }
+        if ($slider.hasClass('current-day')) {
             possibleArr = possibleArr.filter((num) => {
-                return values.indexOf(num) == -1;
-            });
-            // console.log('possible random values', possibleArr);
-            let newValue = possibleArr.randomElement();
-            // console.log('random new value', newValue);
-            if (newValue != undefined) {
-                values.push(newValue);
-            } else  {
-                // return false if no place to add
+                if (num >= 23 - startHour) return false;
+                else return true;
+            })
+        }
+        possibleArr = possibleArr.filter((num) => {
+            return values.indexOf(num) == -1;
+        });
+        // console.log('possible random values', possibleArr);
+        let newValue = possibleArr[possibleArr.length-1];
+        // console.log('random new value', newValue);
+        if (newValue != undefined) {
+            values.push(newValue);
+            $slider.slider('destroy');
+            initSlider($slider, values);
+            $slider.find('.ui-slider-handle:last').focus();
+            return true;
+        } else  {
+            if (isFromDrag) {
                 return false;
             }
+            else {
+                let nextSlider = findNextSlider(selector, false);
+                if ($('.flex-active-slide .default-wrap > div').index(nextSlider) == -1) {
+                    return false;
+                } else {addHandle(nextSlider);}
 
+            }
         }
-        $slider.slider('destroy');
-        initSlider($slider, values);
     }
-    $slider.find('.ui-slider-handle:last').focus();
-    return true;
 }
 
 export function deleteHandle(handle) {
