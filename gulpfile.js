@@ -5,7 +5,6 @@ var gulp = require('gulp'),
     sourcemaps = require('gulp-sourcemaps'),
     uglify = require('gulp-uglify'),
     browserify = require('browserify'),
-    babel = require('gulp-babel'),
     babelify = require('babelify'),
     source = require('vinyl-source-stream'),
     buffer = require('vinyl-buffer'),
@@ -40,10 +39,17 @@ gulp.task('styles', function () {
 });
 
 gulp.task('lib-js', function() {
-    return gulp.src(LIB_JS_INCLUDE_PATHS)
-        .pipe(plumber({ errorHandler: handleError }))
+    return browserify({
+        entries: LIB_JS_INCLUDE_PATHS
+    })
+        .transform(babelify.configure({
+            presets: ["es2015"]
+        }))
+        .bundle()
+        .on('error', errorHandle)
+        .pipe(source("main.js"))
+        .pipe(buffer())
         .pipe(sourcemaps.init())
-        .pipe(babel({compact: true, presets: ['es2015']}))
         .pipe(concat('app.js'))
         .pipe(uglify())
         .pipe(sourcemaps.write())
