@@ -13,11 +13,14 @@ function getAbsoluteRect(elem) {
 }
 
 var sliderPopup;
+var currentHour; // hour on which widget started, handles cant step on it and past it
 $(window).ready(()=> {
     $('body').append('<div id="slider-popup"></div>');
     sliderPopup = $('#slider-popup');
+    currentHour = moment().hour();
 });
 var daytime_on = true;
+
 function filterValues(values, daytime_on) {
     if (daytime_on) {
         // console.log('filtering...', values);
@@ -39,11 +42,12 @@ function getDefaultValue(daytime_on) {
         if (value < 4) value = 4;
         else if (value > 14) value = 14;
     }
-    console.log('default', value);
+    // console.log('default', value);
     return value;
 }
 export function initSlider(selector, values) {
-    values = values ? filterValues(values, daytime_on) : [getDefaultValue(daytime_on)];
+    var defaultValue = getDefaultValue(daytime_on);
+    values = values ? filterValues(values, daytime_on) : [defaultValue];
     selector.slider({
         orientation: 'vertical',
         min: daytime_on ? 4 : 0,
@@ -59,12 +63,14 @@ export function initSlider(selector, values) {
             sliderPopup.css('left', getAbsoluteRect(ui.handle).left + 30);
         },
         slide: function (e, ui) {
+            if ($(this).hasClass('current-day')) {
+                if (!handleCurrentDay(ui)) return false;
+            }
             var thisCoords = getAbsoluteRect(this);
             // only triggering the event if mouse is in a range of the slider
             if (!(e.pageX < thisCoords.right+10 && e.pageX > thisCoords.left-10
                 && e.pageY < thisCoords.bottom+10 && e.pageY > thisCoords.top-10)) {return false;}
             let diffValues = [];
-            // console.log(ui.values);
             // prevent handle overlapping
             for (let a = 0; a < ui.values.length; a++) {
                 if (diffValues.indexOf(ui.values[a]) > -1) {
@@ -78,13 +84,12 @@ export function initSlider(selector, values) {
             sliderPopup.text(v);
             sliderPopup.css('top', getAbsoluteRect(ui.handle).top - 10);
             sliderPopup.css('left', getAbsoluteRect(ui.handle).left + 30);
-            $(".contentSlider").html(v + ' hour');
         },
         stop: () => {
             sliderPopup.hide();
         },
     });
-    // console.log('VALUES', values);
+    console.log('VALUES', values);
     if (values.length == 0) {
         selector.removeClass('active-slider');
     } else {
@@ -93,6 +98,26 @@ export function initSlider(selector, values) {
     setDraggables();
 }
 
+export function initFirstSlider(selector) {
+    var defaultValue = getDefaultValue(daytime_on);
+    if ((defaultValue >= 23 - currentHour)) {
+        console.log('current day with an exception');
+        var thisWeekSliders = $('.flex-active-slide .default-wrap > div');
+        var sliderIndex = thisWeekSliders.index(selector);
+        var nextSlider = thisWeekSliders[sliderIndex + 1];
+        console.log($(nextSlider).hasClass('active-slider'));
+        initSlider($(nextSlider));
+    } else {
+        initSlider(selector);
+    }
+    selector.addClass('current-day');
+}
+
+
+
+function handleCurrentDay(ui) {
+    return (ui.value < 23 - currentHour);
+}
 function setDraggables() {
     $('.ui-slider-handle').off('mousedown');
     $('.ui-slider-handle').on('mousedown', function(e) {
@@ -103,10 +128,9 @@ function setDraggables() {
         var targetSlider = $(this).parent()[0];
         var handleIndex = $(targetSlider).find('.ui-slider-handle').index(targetHandle);
         var sliderIndex = $('.flex-active-slide .scale-item .default-wrap > div').index($(targetSlider));
-        var clone = $(this).clone();
-        clone.css('position', 'absolute');
-        clone.css('width', '25px').css('height', '9px').css('left', '0').css('top', 0).css('opacity', 0.5);
-        clone.css('pointer-events', 'none');
+        var clone = $(this).clone().addClass('handle-clone');
+        clone.css('width', '25px').css('height', '9px');
+        moveAt(e);
         $('body').append(clone);
         console.log('sliderIndex', sliderIndex);
         function initWrapEvents() {
@@ -114,7 +138,11 @@ function setDraggables() {
                 if (i !== sliderIndex) {
                     // console.log('attaching event', el);
                     $(el).mouseup(function(e) {
-                        applyDragAndDrop(e, targetHandle, targetSlider, handleIndex, sliderIndex);
+                        var newSlider = $(e.currentTarget).find('div');
+
+                        applyDragAndDrop(e, targetSlider, newSlider, handleIndex);
+
+
                     })
                 }
             });
@@ -160,16 +188,25 @@ function setDraggables() {
     })
 }
 
-function applyDragAndDrop(e, targetHandle, targetSlider, handleIndex, sliderIndex) {
+function applyDragAndDrop(e, targetSlider, newSlider, handleIndex) {
+    if (newSlider.hasClass('past-day')) return;
+    if (newSlider.hasClass('current-day')) {
+        var defaultValue = getDefaultValue(daytime_on);
+        if (defaultValue >= 23 - currentHour) {
+            return;
+        }
+    }
     console.log(e);
     var oldSliderValues = $(targetSlider).slider('values');
-    var newSlider = $(e.currentTarget).find('div');
     oldSliderValues.splice(handleIndex, 1);
-    $(targetSlider).slider('destroy');
-    initSlider($(targetSlider), oldSliderValues);
+    var wasAdded = addHandle(newSlider);
+    // if slider actually didnt update (not enough place), do nothing
+    if (wasAdded) {
+        $(targetSlider).slider('destroy');
+        initSlider($(targetSlider), oldSliderValues);
+    }
     sliderPopup.hide();
-    console.log('newslider', newSlider);
-    addHandle(newSlider);
+
 
 }
 
@@ -193,7 +230,7 @@ export function addLastWeekSlide(selector) {
                                             <div class="day">Mon</div>
                                             <div class="add-times-left">
                                                 <div class="default-wrap">
-                                                    <div class="monday default-slider slide-active"></div>
+                                                    <div class="default-slider monday"></div>
                                                 </div>
                                             </div>
                                         </li>
@@ -283,6 +320,7 @@ export function daytimeSliderChanges() {
 
 export function addHandle(selector) {
     var $slider = $(selector);
+    console.log($slider);
     var possibleArr = [];
     // a list of possible handle values which can be added
     if (daytime_on) possibleArr = [4,5,6,7,8,9,10,11,12,13,14];
@@ -290,14 +328,30 @@ export function addHandle(selector) {
         possibleArr = [...new Array(24).keys()];
     }
     if (!$slider.hasClass('active-slider')) {
-        initSlider($slider);
-        $slider.addClass('active-slider');
+        var defaultValue = getDefaultValue(daytime_on);
+        if ($slider.hasClass('current-day') && (defaultValue >= 23 - currentHour)) {
+            var thisWeekSliders = $('.flex-active-slide .default-wrap > div');
+            var sliderIndex = thisWeekSliders.index(selector);
+            var nextSlider = thisWeekSliders[sliderIndex + 1];
+            addHandle(nextSlider);
+            $(nextSlider).addClass('active-slider');
+        }
+        else {
+            initSlider($slider);
+            $slider.addClass('active-slider');
+        }
     } else {
         var values = $slider.slider('values');
-        let possibleNewValue = values[values.length-1] - 1;
+        let possibleNewValue = values[values.length-1] - 4;
         if (values.indexOf(possibleNewValue) === -1 && possibleArr.indexOf(possibleNewValue) !== -1) {
-            values.push(values[values.length-1] - 1);
+            values.push(possibleNewValue);
         } else {
+            if ($slider.hasClass('current-day')) {
+                possibleArr = possibleArr.filter((num) => {
+                    if (num >= 23 - currentHour) return false;
+                    else return true;
+                })
+            }
             possibleArr = possibleArr.filter((num) => {
                 return values.indexOf(num) == -1;
             });
@@ -307,7 +361,8 @@ export function addHandle(selector) {
             if (newValue != undefined) {
                 values.push(newValue);
             } else  {
-                // console.log('no choices left! Nothing to add');
+                // return false if no place to add
+                return false;
             }
 
         }
@@ -315,6 +370,7 @@ export function addHandle(selector) {
         initSlider($slider, values);
     }
     $slider.find('.ui-slider-handle:last').focus();
+    return true;
 }
 
 export function deleteHandle(handle) {

@@ -61,7 +61,7 @@ gulp.task('js', function() {
         .pipe(source("main.js"))
         .pipe(buffer())
         .pipe(sourcemaps.init())
-        .pipe(uglify())
+        // .pipe(uglify())
         .pipe(sourcemaps.write())
         .pipe(gulp.dest("./js"));
 });

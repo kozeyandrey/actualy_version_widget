@@ -1,8 +1,7 @@
-import {initSlider, getItems, addLastWeekSlide,
+import {initSlider, initFirstSlider, getItems, addLastWeekSlide,
         daytimeSliderChanges, addHandle, deleteHandle} from './weeks';
 $(window).ready(function () {
-
-
+var isInitiated = false;
 //  OPEN WIDGET
     {
         let display;
@@ -11,51 +10,65 @@ $(window).ready(function () {
             if (display == 'none') {
                 document.getElementById('box').style.display = 'block';
 
-                $('.flexslider').flexslider({
-                    animation: 'slide',
-                    slideshow: false,
-                    controlNav: false,
-                    controlsContainer: $('.custom-controls-container'),
-                    customDirectionNav: $('.custom-navigation a'),
-                    keyboard: false,
-                    animationLoop: true,
-                    after: (ctx) => {
-                        if (ctx.currentSlide == ctx.last) {
-                            addLastWeekSlide($('.flexslider'));
-                            console.log('last transition ended');
+                if (!isInitiated) {
+                    isInitiated = true;
+                    $('.flexslider').flexslider({
+                        animation: 'slide',
+                        slideshow: false,
+                        controlNav: false,
+                        controlsContainer: $('.custom-controls-container'),
+                        customDirectionNav: $('.custom-navigation a'),
+                        keyboard: false,
+                        animationLoop: true,
+                        after: (ctx) => {
+                            if (ctx.currentSlide == ctx.last) {
+                                addLastWeekSlide($('.flexslider'));
+                                console.log('last transition ended');
+                            }
                         }
-                    }
-                });
+                    });
+                    // Set Current day slider active, with one value
+                    {
+                        let day = moment().isoWeekday();
+                        let activeElem;
+                        switch(day) {
+                            case 1:
+                                activeElem = '.monday';
+                                break;
+                            case 2:
+                                activeElem = '.tuesday';
+                                break;
+                            case 3:
+                                activeElem = '.wednesday';
+                                break;
+                            case 4:
+                                activeElem = '.thursday';
+                                break;
+                            case 5:
+                                activeElem = '.friday';
+                                break;
+                            case 6:
+                                activeElem = '.saturday';
+                                break;
+                            case 7:
+                                activeElem = '.sunday';
+                                break;
+                        }
+                        let firstSlider = $('.flex-active-slide').find(activeElem);
+                        initFirstSlider(firstSlider);
 
-                // Set Current day slider active, with one value
-                {
-                    let day = moment().isoWeekday();
-                    let activeElem;
-                    switch(day) {
-                        case 1:
-                            activeElem = '.monday';
-                            break;
-                        case 2:
-                            activeElem = '.tuesday';
-                            break;
-                        case 3:
-                            activeElem = '.wednesday';
-                            break;
-                        case 4:
-                            activeElem = '.thursday';
-                            break;
-                        case 5:
-                            activeElem = '.friday';
-                            break;
-                        case 6:
-                            activeElem = '.saturday';
-                            break;
-                        case 7:
-                            activeElem = '.sunday';
-                            break;
+                        let allFirstWeekSliders = $('.flex-active-slide .default-wrap > div');
+                        // console.log(allFirstWeekSliders);
+                        let pastDaySliders = allFirstWeekSliders.splice(0, allFirstWeekSliders.index(firstSlider));
+                        pastDaySliders.forEach(el => {
+                            // mark past days (cant move/create handles there)
+                            $(el).addClass('past-day');
+                        })
                     }
-                    initSlider($('.flex-active-slide').find(activeElem));
                 }
+
+
+
 
 
 
@@ -140,8 +153,10 @@ $(window).ready(function () {
 // ADD AND DEL BUTTON
 
     $('.add-button').click(() => {
-        var activeMonday = $('.flex-active-slide').find('.monday');
-        addHandle(activeMonday);
+        var allSliders = $('.flex-active-slide .default-wrap > div:not(.past-day)');
+        console.log('allSliders', allSliders);
+        var firstActiveSlider = allSliders[0];
+        addHandle(firstActiveSlider);
     });
     {
         let focusElem = null;
@@ -156,12 +171,9 @@ $(window).ready(function () {
             }
         });
     }
-
-
-
 });
-
-// TODO drag and drop handles
+// TODO prevent moving handles to days and hours past current time
+// TODO move white background a bit so it looks better (skype) DONE
 // TODO final calculations function (dont forget about 23-value)
 // TODO handle custom size???
 

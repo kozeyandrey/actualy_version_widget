@@ -67,7 +67,6 @@
     border: none;
     background: none;
     a:focus {
-        background: red;
         outline: none;
     }
     .ui-slider-handle {
@@ -89,6 +88,9 @@
     .ui-state-hover {
         background: linear-gradient(#00C6FF, #0072ff);
         box-shadow: inset 0 -1 3px $main_color;
+    }
+    .ui-state-focus {
+        background: linear-gradient(#0053B6, #00408B);
     }
 }
 
@@ -120,4 +122,14 @@
 
 .default-wrap {
     user-select: initial !important;
+}
+
+.handle-clone {
+    position: absolute;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    background: linear-gradient(#0053B6, #00408B);
+    opacity: 0.5;
+    border: none;
 }
